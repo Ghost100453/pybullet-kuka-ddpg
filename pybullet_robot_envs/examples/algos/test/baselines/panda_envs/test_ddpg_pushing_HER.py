@@ -21,6 +21,7 @@ model_class = DDPG  # works also with SAC and DDPG
 
 action_space = 7
 # -p
+# 固定物块
 fixed = True
 # -o
 normalize_observations = False

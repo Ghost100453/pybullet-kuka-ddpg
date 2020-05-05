@@ -24,6 +24,8 @@ from stable_baselines.ddpg.policies import FeedForwardPolicy
 from stable_baselines.ddpg.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise, AdaptiveParamNoiseSpec
 import numpy as np
 
+from datetime import datetime
+
 
 
 class CustomPolicy(FeedForwardPolicy):
@@ -49,14 +51,14 @@ def callback(_locals, _globals):
         x, y = ts2xy(load_results(log_dir), 'timesteps')
         if len(x) > 0:
             mean_reward = np.mean(y[-100:])
-            print(x[-1], 'timesteps')
-            print("Best mean reward: {:.2f} - Last mean reward per episode: {:.2f}".format(best_mean_reward, mean_reward))
+            print(datetime.now(), x[-1], 'timesteps')
+            print(datetime.now(), "Best mean reward: {:.2f} - Last mean reward per episode: {:.2f}".format(best_mean_reward, mean_reward))
 
             # New best model, you could save the agent here
             if mean_reward > best_mean_reward:
                 best_mean_reward = mean_reward
                 # Example for saving best model
-                print("Saving new best model")
+                print(datetime.now(), "Saving new best model")
                 _locals['self'].save(log_dir_policy + 'best_model.pkl')
     n_steps += 1
     return True
@@ -65,6 +67,7 @@ def main():
     global log_dir
     model_class = DDPG  # works also with SAC and DDPG
     action_space = 7
+    # 固定物块
     fixed = True
     #0 completely fixed, 1 slightly random radius, 2 big random radius,
     object_position = 1
@@ -94,7 +97,7 @@ def main():
                 verbose=1,tensorboard_log="../pybullet_logs/panda_push_ddpg/stable_baselines/pushing_DDPG_HER_PHASE_1", buffer_size=1000000,batch_size=256,
                 random_exploration=0.3, action_noise=action_noise)
 
-    load_policy = True
+    load_policy = False
     if (load_policy):
         model = HER.load("../policies/pushing_DDPG_HER_PHASE_1.pkl", env=env, n_sampled_goal=4,
         goal_selection_strategy=goal_selection_strategy,

@@ -1,24 +1,23 @@
-# Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+# TODO
+# # Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
 # This software may be modified and distributed under the terms of the
 # LGPL-2.1+ license. See the accompanying LICENSE file for details.
 
 import os, inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+from os import path
 #print(currentdir)
-parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(currentdir)))))
+parentdir =path.abspath(path.join(__file__ ,"../../../../../.."))
 os.sys.path.insert(0, parentdir)
 print(parentdir)
 
-
-
-from envs.panda_envs.panda_push_gym_env import pandaPushGymEnv
+from pybullet_robot_envs.envs.kuka_envs.kuka_push_gym_env import kukaPushGymEnv
 from stable_baselines import logger
 from stable_baselines.ddpg.policies import LnMlpPolicy
 from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines.ddpg.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise, AdaptiveParamNoiseSpec
 from stable_baselines import DDPG
-
 from termcolor import colored
+
 import datetime
 import pybullet_data
 import robot_data
@@ -31,21 +30,21 @@ import sys, getopt
 def main(argv):
 
     # -j
-    numControlledJoints = 7
+    numControlledJoints = 6
     # -p
     fixed = False
     # -o
     normalize_observations = False
     # -g
-    gamma = 0.9
+    gamma = 0.99
     # -b
-    batch_size = 128
+    batch_size = 64
     # -m
     memory_limit = 1000000
     # -r
     normalize_returns = True
     # -t
-    timesteps = 10000000
+    timesteps = 1000000
 
     policy_name = "pushing_policy"
 
@@ -53,12 +52,12 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hj:p:g:b:m:r:o:t:n:",["j=","p=","g=","b=","m=","r=","o=","t=","n="])
     except getopt.GetoptError:
-        print ('train.py -t <timesteps> -j <numJoints> -p <fixedPoseObject> -n <policy_name> -g <gamma> -b <batchsize> -m <memory_limit> -r <norm_ret> -o <norm_obs> -p <policy_name>')
+        print ('test.py -t <timesteps> -j <numJoints> -p <fixedPoseObject> -g <gamma> -b <batchsize> -m <memory_limit> -r <norm_ret> -o <norm_obs> ')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
             print('------------------ Default values:')
-            print('train.py -t <timesteps: 10000000> -j <numJoints: 7> -p <fixedPoseObject: False> -n <policy_name:"pushing_policy"> -g <gamma: 0.9> -b <batch_size: 16> -m <memory_limit: 1000000> -r <norm_ret: True> -o <norm_obs: False> ')
+            print('train.py -t <timesteps: 10000000> -j <numJoints: 6> -p <fixedPoseObject: False> -n <policy_name:"pushing_policy"> -g <gamma: 0.9> -b <batch_size: 16> -m <memory_limit: 1000000> -r <norm_ret: True> -o <norm_obs: False> ')
             print('------------------')
             return 0
             sys.exit()
@@ -86,22 +85,25 @@ def main(argv):
             policy_name = str(arg)
 
 
-    discreteAction = 0
-    rend = True
-    pandaenv = pandaPushGymEnv(urdfRoot=robot_data.getDataPath(), renders=rend, useIK=0,
-        isDiscrete=discreteAction, numControlledJoints = numControlledJoints,
-        fixedPositionObj = fixed, includeVelObs = True)
 
-    n_actions = pandaenv.action_space.shape[-1]
+
+    discreteAction = 0
+    # rend = True
+    rend = False
+
+    kukaenv = kukaPushGymEnv(urdfRoot=robot_data.getDataPath(), renders=rend, useIK=0, isDiscrete=discreteAction, numControlledJoints = numControlledJoints, fixedPositionObj = fixed, includeVelObs = True)
+    n_actions = kukaenv.action_space.shape[-1]
     param_noise = None
     action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
 
 
-    pandaenv = DummyVecEnv([lambda: pandaenv])
+    kukaenv = DummyVecEnv([lambda: kukaenv])
+    
+    full_log = True
 
-    model = DDPG(LnMlpPolicy, pandaenv,normalize_observations = normalize_observations, gamma=gamma,batch_size=batch_size,
-                memory_limit=memory_limit, normalize_returns = normalize_returns, verbose=1, param_noise=param_noise,
-                action_noise=action_noise, tensorboard_log="../pybullet_logs/pandareach_ddpg/", reward_scale = 1)
+    model = DDPG(LnMlpPolicy, kukaenv,normalize_observations = normalize_observations, gamma=gamma,batch_size=batch_size,
+                    memory_limit=memory_limit, normalize_returns = normalize_returns, verbose=1, param_noise=param_noise,
+                    action_noise=action_noise, tensorboard_log="../pybullet_logs/kukapush_ddpg/",full_tensorboard_log=full_log,reward_scale = 1)
 
     print(colored("-----Timesteps:","red"))
     print(colored(timesteps,"red"))
@@ -115,8 +117,9 @@ def main(argv):
     print(colored("Launch the script with -h for further info","red"))
 
     model.learn(total_timesteps=timesteps)
-    print("Saving model to panda.pkl")
-    model.save("../pybullet_logs/pandareach_ddpg/policies"+ policy_name)
+
+    print("Saving model to kuka.pkl")
+    model.save("../pybullet_logs/kukapush_ddpg/"+ policy_name)
 
     del model # remove to demonstrate saving and loading
 
