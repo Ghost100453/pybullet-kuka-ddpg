@@ -12,7 +12,7 @@ print(parentdir)
 
 from stable_baselines import HER, DQN, SAC, DDPG
 from stable_baselines.her import GoalSelectionStrategy, HERGoalEnvWrapper
-from envs.panda_envs.panda_push_gym_env_HER import pandaPushGymEnvHER
+from pybullet_robot_envs.envs.panda_envs.panda_push_gym_env_HER import pandaPushGymEnvHER
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.results_plotter import load_results, ts2xy
 from stable_baselines.bench import Monitor
@@ -42,8 +42,6 @@ log_dir_policy = '../policies/pushing_DDPG_HER_PHASE_1'
 
 
 def callback(_locals, _globals):
-
-
     global n_steps, best_mean_reward, log_dir
     # Print stats every 1000 calls
     if (n_steps) % 1000 == 0:
@@ -79,9 +77,6 @@ def main():
     policy_name = "pushing_policy"
     discreteAction = 0
     rend = False
-
-
-
     env = pandaPushGymEnvHER(urdfRoot=robot_data.getDataPath(), renders=rend, useIK=0,
             isDiscrete=discreteAction, action_space = action_space,
             fixedPositionObj = fixed, includeVelObs = True, object_position=object_position)

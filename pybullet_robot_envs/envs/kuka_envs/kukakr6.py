@@ -78,7 +78,7 @@ class kukakr6:
             observation.extend(list(velL))
             observation.extend(list(velA))
 
-        jointStates = p.getJointStates(self.kukaId, range(8))
+        jointStates = p.getJointStates(self.kukaId, range(6))
         jointPoses = [x[0] for x in jointStates]
         observation.extend(list(jointPoses))
 

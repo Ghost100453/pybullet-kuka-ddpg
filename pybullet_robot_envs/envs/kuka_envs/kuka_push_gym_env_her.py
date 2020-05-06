@@ -2,6 +2,7 @@
 # This software may be modified and distributed under the terms of the
 # LGPL-2.1+ license. See the accompanying LICENSE file for details.
 
+from collections import OrderedDict
 from datetime import datetime
 from pkg_resources import parse_version
 import robot_data
@@ -22,7 +23,6 @@ currentdir = os.path.dirname(os.path.abspath(
 print("current_dir=" + currentdir)
 os.sys.path.insert(0, currentdir)
 
-
 largeValObservation = 100
 
 RENDER_HEIGHT = 720
@@ -34,7 +34,7 @@ def goal_distance(goal_a, goal_b):
     return np.linalg.norm(goal_a - goal_b, axis=-1)
 
 
-class kukaPushGymEnv(gym.Env):
+class kukaPushGymEnvHer(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'],
                 'video.frames_per_second': 50}
 
@@ -77,12 +77,18 @@ class kukaPushGymEnv(gym.Env):
 
         # self.seed()
         # initialize simulation environment
-        self.reset()
+        self._observation = self.reset()
+        observation_dim = len(self._observation['observation'])
+        self.observation_space = spaces.Dict({
+            'observation': spaces.Box(-largeValObservation, largeValObservation, shape=(observation_dim,), dtype=np.float32),
+            'achieved_goal': spaces.Box(-largeValObservation, largeValObservation, shape=(3,), dtype=np.float32),
+            'desired_goal': spaces.Box(-largeValObservation, largeValObservation, shape=(3,), dtype=np.float32)
+        })
 
-        observationDim = len(self._observation)
-        observation_high = np.array([largeValObservation] * observationDim)
-        self.observation_space = spaces.Box(-observation_high,
-                                            observation_high, dtype='float32')
+        # observationDim = len(self._observation)
+        # observation_high = np.array([largeValObservation] * observationDim)
+        # self.observation_space = spaces.Box(-observation_high,
+        #                                     observation_high, dtype='float32')
 
         if (self._isDiscrete):
             self.action_space = spaces.Discrete(
@@ -136,19 +142,24 @@ class kukaPushGymEnv(gym.Env):
             p.stepSimulation()
 
         self._observation = self.getExtendedObservation()
-        return np.array(self._observation)
+        return self._observation
 
     def getExtendedObservation(self):
 
         # get robot observations
-        self._observation = self._kuka.getObservation()
+        observation = self._kuka.getObservation()
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
 
-        self._observation.extend(list(objPos))
-        self._observation.extend(list(objOrn))
+        observation.extend(list(objPos))
+        observation.extend(list(objOrn))
         # add target object position
-        self._observation.extend(self.target_pose)
-        return self._observation
+        observation.extend(self.target_pose)
+        # return self._observation
+        return OrderedDict([
+            ('observation', np.asarray(list(observation).copy())),
+            ('achieved_goal', np.asarray(list(objPos).copy())),
+            ('desired_goal', np.asarray(list(self.target_pose).copy()))
+        ])
 
     def step(self, action):
         if self._useIK:
@@ -167,7 +178,7 @@ class kukaPushGymEnv(gym.Env):
 
             # print('termination:', self._termination())
 
-            if self._termination()[0]:
+            if self._termination():
                 break
 
             self._envStepCounter += 1
@@ -178,8 +189,6 @@ class kukaPushGymEnv(gym.Env):
 
         self._observation = self.getExtendedObservation()
 
-        reward = self._compute_reward()
-
         done = self._termination()
         # 这里info要提供'is_success'信息，方便stable baselines 记录统计success rate数据
         # stable baselines 记录 如果success rate为0，是不显示的，但是success rate需要info数据
@@ -187,7 +196,9 @@ class kukaPushGymEnv(gym.Env):
         info = {'is_success': False}
         if self.terminated:
             info['is_success'] = True
-        return np.array(self._observation), np.array([reward]), np.array(done), info
+        reward = self.compute_reward(
+            self._observation['achieved_goal'], self._observation['desired_goal'], info)
+        return self._observation, reward, done, info
 
     def render(self, mode="rgb_array", close=False):
         # TODO Check the behavior of this function
@@ -229,17 +240,15 @@ class kukaPushGymEnv(gym.Env):
 
         if (self.terminated or self._envStepCounter > self._maxSteps):
             self._observation = self.getExtendedObservation()
-            return [True]
+            return True
 
-        return [False]
+        return False
 
-    def _compute_reward(self):
+    def compute_reward(self, achieved_goal, desired_goal, info):
 
-        reward = np.float(32.0)
-        objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
         endEffAct = self._kuka.getObservation()[0:3]
-        d1 = goal_distance(np.array(endEffAct), np.array(objPos))
-        d2 = goal_distance(np.array(objPos), np.array(self.target_pose))
+        d1 = goal_distance(np.array(endEffAct), np.array(achieved_goal))
+        d2 = goal_distance(np.array(achieved_goal), np.array(desired_goal))
         d = d1 + d2
         reward = -d
         if d2 <= self._target_dist_min:

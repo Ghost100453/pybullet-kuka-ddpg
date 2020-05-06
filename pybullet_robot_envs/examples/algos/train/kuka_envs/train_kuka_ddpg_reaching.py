@@ -87,8 +87,8 @@ def main(argv):
 
 
     discreteAction = 0
-    rend = True
-    # rend = False
+    # rend = True
+    rend = False
 
     kukaenv = kukaReachGymEnv(urdfRoot=robot_data.getDataPath(), renders=rend, useIK=0, isDiscrete=discreteAction, numControlledJoints = numControlledJoints, fixedPositionObj = fixed, includeVelObs = True)
     n_actions = kukaenv.action_space.shape[-1]

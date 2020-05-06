@@ -22,6 +22,11 @@
     </collision>
   </link>
   <link name="link_1">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -37,6 +42,11 @@
     </collision>
   </link>
   <link name="link_2">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -52,6 +62,11 @@
     </collision>
   </link>
   <link name="link_3">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -67,6 +82,11 @@
     </collision>
   </link>
   <link name="link_4">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -82,6 +102,11 @@
     </collision>
   </link>
   <link name="link_5">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -97,6 +122,11 @@
     </collision>
   </link>
   <link name="link_6">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -111,14 +141,20 @@
       </geometry>
     </collision>
   </link>
-  <link name="tool0"/>
+  <link name="tool0">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
+  </link>
   <joint type="revolute" name="joint_1">
     <origin xyz="0 0 0.4" rpy="0 0 0"/>
       <parent link="base_link"/>
       <child link="link_1"/>
       <axis xyz="0 0 -1"/>
       <limit lower="-2.9670597283903604" upper="2.9670597283903604" effort="0" velocity="6.283185307179586"/>
-  </joint> -->
+  </joint>
   <joint type="revolute" name="joint_2">
     <origin xyz="0.025 0 0" rpy="0 0 0"/>
       <parent link="link_1"/>
@@ -159,7 +195,13 @@
     <child link="tool0"/>
     <origin xyz="0 0 0" rpy="0 1.57079632679 0"/>
   </joint>
-  <link name="base"/>
+  <link name="base">
+  <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
+  </link>
   <joint name="base_link-base" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <parent link="base_link"/>
