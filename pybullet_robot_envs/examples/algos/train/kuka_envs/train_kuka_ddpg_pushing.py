@@ -36,9 +36,9 @@ def main(argv):
     # -o
     normalize_observations = False
     # -g
-    gamma = 0.99
+    gamma = 0.9
     # -b
-    batch_size = 64
+    batch_size = 16
     # -m
     memory_limit = 1000000
     # -r

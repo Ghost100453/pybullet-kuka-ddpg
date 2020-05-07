@@ -34,7 +34,7 @@ def goal_distance(goal_a, goal_b):
     return np.linalg.norm(goal_a - goal_b, axis=-1)
 
 
-class kukaPushGymEnvHer(gym.Env):
+class kukaPushGymEnvHer(gym.GoalEnv):
     metadata = {'render.modes': ['human', 'rgb_array'],
                 'video.frames_per_second': 50}
 
@@ -62,7 +62,7 @@ class kukaPushGymEnvHer(gym.Env):
         self._cam_pitch = -40
         self._h_table = []
         self._target_dist_max = 0.3
-        self._target_dist_min = 0.05
+        self._target_dist_min = 0.1
         self._p = p
         self.fixedPositionObj = fixedPositionObj
         self.includeVelObs = includeVelObs
@@ -153,8 +153,9 @@ class kukaPushGymEnvHer(gym.Env):
         observation.extend(list(objPos))
         observation.extend(list(objOrn))
         # add target object position
-        observation.extend(self.target_pose)
+        observation.extend(list(self.target_pose))
         # return self._observation
+        # print('self observation:', list(observation))
         return OrderedDict([
             ('observation', np.asarray(list(observation).copy())),
             ('achieved_goal', np.asarray(list(objPos).copy())),
@@ -175,20 +176,15 @@ class kukaPushGymEnvHer(gym.Env):
         for i in range(self._actionRepeat):
             self._kuka.applyAction(action)
             p.stepSimulation()
-
             # print('termination:', self._termination())
-
             if self._termination():
                 break
-
             self._envStepCounter += 1
             # print(datetime.now(), 'envStepCounter:', self._envStepCounter, 'terminated:', self._termination())
 
         if self._renders:
             time.sleep(self._timeStep)
-
         self._observation = self.getExtendedObservation()
-
         done = self._termination()
         # 这里info要提供'is_success'信息，方便stable baselines 记录统计success rate数据
         # stable baselines 记录 如果success rate为0，是不显示的，但是success rate需要info数据
@@ -246,13 +242,18 @@ class kukaPushGymEnvHer(gym.Env):
 
     def compute_reward(self, achieved_goal, desired_goal, info):
 
-        endEffAct = self._kuka.getObservation()[0:3]
-        d1 = goal_distance(np.array(endEffAct), np.array(achieved_goal))
+        # endEffAct = self._kuka.getObservation()[0:3]
+        # d1 = goal_distance(np.array(endEffAct), np.array(achieved_goal))
         d2 = goal_distance(np.array(achieved_goal), np.array(desired_goal))
-        d = d1 + d2
-        reward = -d
+        # d = d1 + d2
+        # reward = -d
+        # if d2 <= self._target_dist_min:
+        #     reward = np.float32(1000.0) + (100 - d*80)
+        # return reward
         if d2 <= self._target_dist_min:
-            reward = np.float32(1000.0) + (100 - d*80)
+            reward = 0
+        else:
+            reward = -1
         return reward
 
     def _sample_pose(self):

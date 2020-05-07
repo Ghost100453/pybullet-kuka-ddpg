@@ -32,7 +32,7 @@ def goal_distance(goal_a, goal_b):
     assert goal_a.shape == goal_b.shape
     return np.linalg.norm(goal_a - goal_b, axis = -1)
 
-class kukaReachGymEnvHer(gym.Env):
+class kukaReachGymEnvHer(gym.GoalEnv):
     metadata = {'render.modes': ['human', 'rgb_array'],
     'video.frames_per_second': 50 }
 

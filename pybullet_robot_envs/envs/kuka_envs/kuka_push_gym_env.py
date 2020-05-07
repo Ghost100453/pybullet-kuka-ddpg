@@ -62,7 +62,7 @@ class kukaPushGymEnv(gym.Env):
         self._cam_pitch = -40
         self._h_table = []
         self._target_dist_max = 0.3
-        self._target_dist_min = 0.05
+        self._target_dist_min = 0.1
         self._p = p
         self.fixedPositionObj = fixedPositionObj
         self.includeVelObs = includeVelObs
@@ -87,7 +87,6 @@ class kukaPushGymEnv(gym.Env):
         if (self._isDiscrete):
             self.action_space = spaces.Discrete(
                 self._kuka.getActionDimension())
-
         else:
             # self.action_dim = 2 #self._kuka.getActionDimension()
             self._action_bound = 1
@@ -154,7 +153,6 @@ class kukaPushGymEnv(gym.Env):
         if self._useIK:
             # TO DO
             return 0
-
         else:
             action = [float(i*0.05) for i in action]
             return self.step2(action)
@@ -164,10 +162,8 @@ class kukaPushGymEnv(gym.Env):
         for i in range(self._actionRepeat):
             self._kuka.applyAction(action)
             p.stepSimulation()
-
             # print('termination:', self._termination())
-
-            if self._termination()[0]:
+            if self._termination():
                 break
 
             self._envStepCounter += 1
@@ -229,21 +225,27 @@ class kukaPushGymEnv(gym.Env):
 
         if (self.terminated or self._envStepCounter > self._maxSteps):
             self._observation = self.getExtendedObservation()
-            return [True]
+            return True
 
-        return [False]
+        return False
 
     def _compute_reward(self):
 
         reward = np.float(32.0)
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
         endEffAct = self._kuka.getObservation()[0:3]
-        d1 = goal_distance(np.array(endEffAct), np.array(objPos))
+        # d1 = goal_distance(np.array(endEffAct), np.array(objPos))
         d2 = goal_distance(np.array(objPos), np.array(self.target_pose))
-        d = d1 + d2
-        reward = -d
+        # d = d1 + d2
+        # reward = -d
+        reward = -1
         if d2 <= self._target_dist_min:
-            reward = np.float32(1000.0) + (100 - d*80)
+            # reward = np.float32(1000.0) + (100 - d*80)
+            reward = 0
+        # 将dense reward(密集型)改为sparse reward(稀疏型)
+        # 采用sparse reward的原因有
+        # 1. 比较符合现实情况，只有做到了和没做到两种
+        # 2. 相比dense reward减少了reward的波动，使得训练更为稳定
         return reward
 
     def _sample_pose(self):

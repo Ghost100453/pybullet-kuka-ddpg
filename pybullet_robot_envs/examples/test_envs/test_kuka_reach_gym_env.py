@@ -31,13 +31,14 @@ def main():
 
     for t in range(int(1e7)):
         #env.render()
-        action = []
-        for motorId in range(6):
-            action.append(env._p.readUserDebugParameter(motorId))
+        # action = []
+        # for motorId in range(6):
+        #     action.append(env._p.readUserDebugParameter(motorId))
 
-        action = int(action[0]) if discreteAction else action
+        # action = int(action[0]) if discreteAction else action
 
         #print(env.step(action))
+        action = env.action_space.sample()
 
         state, reward, done, _ = env.step(action)
         if t%100==0:
