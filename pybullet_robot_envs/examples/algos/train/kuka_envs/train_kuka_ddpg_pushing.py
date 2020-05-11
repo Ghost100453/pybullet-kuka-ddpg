@@ -44,7 +44,7 @@ def main(argv):
     # -r
     normalize_returns = True
     # -t
-    timesteps = 1000000
+    timesteps = 10000000
 
     policy_name = "pushing_policy"
 
@@ -103,7 +103,7 @@ def main(argv):
 
     model = DDPG(LnMlpPolicy, kukaenv,normalize_observations = normalize_observations, gamma=gamma,batch_size=batch_size,
                     memory_limit=memory_limit, normalize_returns = normalize_returns, verbose=1, param_noise=param_noise,
-                    action_noise=action_noise, tensorboard_log="../pybullet_logs/kukapush_ddpg/",full_tensorboard_log=full_log,reward_scale = 1)
+                    action_noise=action_noise, tensorboard_log="../pybullet_logs/kuka_push_ddpg/pushing_DDPG_PHASE_1",full_tensorboard_log=full_log,reward_scale = 1)
 
     print(colored("-----Timesteps:","red"))
     print(colored(timesteps,"red"))

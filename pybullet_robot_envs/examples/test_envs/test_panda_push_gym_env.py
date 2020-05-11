@@ -48,6 +48,7 @@ def main():
             action.append(env._p.readUserDebugParameter(motorId))
 
         action = int(action[0]) if discreteAction else action
+        action = env.action_space.sample()
 
         #print(env.step(action))
 

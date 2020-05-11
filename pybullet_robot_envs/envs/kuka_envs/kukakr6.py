@@ -33,7 +33,7 @@ class kukakr6:
         self.useFixedBase = useFixedBase
         self.workspace_lim = [[0.3, 0.60], [-0.3, 0.3], [0, 1]]
         self.workspace_lim_endEff = [[0.1, 0.70], [-0.4, 0.4], [0.65, 1]]
-        self.endEffLink = 6
+        self.endEffLink = 7
         self.action_space = action_space
         self.includeVelObs = includeVelObs
         self.numJoints = 6
@@ -44,7 +44,7 @@ class kukakr6:
         urdfFlags = p.URDF_USE_SELF_COLLISION
         self.kukaId = p.loadURDF(
             self.urdfRootPath, basePosition=self.basePosition, useFixedBase=self.useFixedBase, flags = urdfFlags)
-
+        # jointStates = [0,-0.5,0.5,0,1.6,0]
         for i in range(self.numJoints):
             p.resetJointState(self.kukaId, i, 0)
             p.setJointMotorControl2(self.kukaId, i, p.POSITION_CONTROL, targetPosition=0, targetVelocity=0.0,
@@ -141,8 +141,7 @@ class kukakr6:
             for a in range(len(action)):
 
                 curr_motor_pos = p.getJointState(self.kukaId, a)[0]
-                new_motor_pos = curr_motor_pos + \
-                    action[a]  # supposed to be a delta
+                new_motor_pos = curr_motor_pos + action[a]  # supposed to be a delta
 
                 p.setJointMotorControl2(self.kukaId,
                                         a,

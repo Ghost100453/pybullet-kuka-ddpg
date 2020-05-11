@@ -37,7 +37,7 @@ class CustomPolicy(FeedForwardPolicy):
     def __init__(self, *args, **kwargs):
         super(CustomPolicy, self).__init__(*args, **kwargs,
                                            layers=[256, 256, 256],
-                                           layer_norm=False,
+                                           layer_norm=True,
                                            act_fun=tf.nn.relu,
                                            feature_extraction="lnmlp")
 
@@ -78,7 +78,7 @@ def main(argv):
     batch_size = 64
     memory_limit = 1000000
     normalize_returns = True
-    timesteps = 1000000
+    timesteps = 5000000
     policy_name = "pushing_policy"
     discreteAction = 0
     rend = False
@@ -93,9 +93,9 @@ def main(argv):
         mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
     model_class = DDPG
     goal_selection_strategy = 'future'
-    model = HER(CustomPolicy, kukaenv, model_class, n_sampled_goal=1, goal_selection_strategy=goal_selection_strategy,
+    model = HER(CustomPolicy, kukaenv, model_class, n_sampled_goal=4, goal_selection_strategy=goal_selection_strategy,
                 verbose=1, tensorboard_log="../pybullet_logs/kuka_push_ddpg/pushing_DDPG_HER_PHASE_1", buffer_size=1000000, 
-                batch_size=256, random_exploration=0.3, action_noise=action_noise)
+                batch_size=64, random_exploration=0.3, action_noise=action_noise)
 
     print(colored("-----Timesteps:", "red"))
     print(colored(timesteps, "red"))

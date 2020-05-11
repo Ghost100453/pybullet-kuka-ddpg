@@ -2,24 +2,23 @@
 # This software may be modified and distributed under the terms of the
 # LGPL-2.1+ license. See the accompanying LICENSE file for details.
 
-from pkg_resources import parse_version
-import robot_data
-import pybullet_data
-import random
-from .panda_env import pandaEnv
-import pybullet as p
-import time
-import numpy as np
-from gym.utils import seeding
-from gym import spaces
-import gym
+import os, inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+print ("current_dir=" + currentdir)
+os.sys.path.insert(0,currentdir)
+
 import math as m
-import os
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-print("current_dir=" + currentdir)
-os.sys.path.insert(0, currentdir)
+import gym
+from gym import spaces
+from gym.utils import seeding
+import numpy as np
+import time
+import pybullet as p
+from kukakr6 import kukakr6
+import random
+import pybullet_data
+import robot_data
+from pkg_resources import parse_version
 
 
 largeValObservation = 100
@@ -27,23 +26,21 @@ largeValObservation = 100
 RENDER_HEIGHT = 720
 RENDER_WIDTH = 960
 
-
 def goal_distance(goal_a, goal_b):
     assert goal_a.shape == goal_b.shape
-    return np.linalg.norm(goal_a - goal_b, axis=-1)
+    return np.linalg.norm(goal_a - goal_b, axis = -1)
 
-
-class pandaReachGymEnv(gym.Env):
+class kukaReachGymEnv(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'],
-                'video.frames_per_second': 50}
+    'video.frames_per_second': 50 }
 
     def __init__(self, urdfRoot=robot_data.getDataPath(),
-                 useIK=0,
-                 isDiscrete=0,
-                 actionRepeat=1,
-                 renders=False,
-                 maxSteps=1000,
-                 dist_delta=0.03, numControlledJoints=7, fixedPositionObj=True, includeVelObs=True):
+                 useIK = 0,
+                 isDiscrete = 0,
+                 actionRepeat = 1,
+                 renders = False,
+                 maxSteps = 1000,
+                 dist_delta = 0.03, numControlledJoints = 6, fixedPositionObj = True, includeVelObs = True):
 
         self.action_dim = numControlledJoints
         self._isDiscrete = isDiscrete
@@ -67,34 +64,32 @@ class pandaReachGymEnv(gym.Env):
         self.includeVelObs = includeVelObs
 
         if self._renders:
-            cid = p.connect(p.SHARED_MEMORY)
-            if (cid < 0):
-                cid = p.connect(p.GUI)
-            p.resetDebugVisualizerCamera(2.5, 90, -60, [0.52, -0.2, -0.33])
+          cid = p.connect(p.SHARED_MEMORY)
+          if (cid<0):
+             cid = p.connect(p.GUI)
+          p.resetDebugVisualizerCamera(2.5,90,-60,[0.52,-0.2,-0.33])
         else:
             p.connect(p.DIRECT)
 
-        # self.seed()
+        #self.seed()
         # initialize simulation environment
         self.reset()
 
         observationDim = len(self._observation)
         observation_high = np.array([largeValObservation] * observationDim)
-        self.observation_space = spaces.Box(-observation_high,
-                                            observation_high, dtype='float32')
+        self.observation_space = spaces.Box(-observation_high, observation_high, dtype='float32')
 
         if (self._isDiscrete):
-            self.action_space = spaces.Discrete(
-                self._panda.getActionDimension())
+            self.action_space = spaces.Discrete(self._kuka.getActionDimension())
 
         else:
-            # self.action_dim = 2 #self._panda.getActionDimension()
+            #self.action_dim = 2 #self._kuka.getActionDimension()
             self._action_bound = 1
             action_high = np.array([self._action_bound] * self.action_dim)
-            self.action_space = spaces.Box(-action_high,
-                                           action_high, dtype='float32')
+            self.action_space = spaces.Box(-action_high, action_high, dtype='float32')
 
         self.viewer = None
+
 
     def reset(self):
         self.terminated = False
@@ -102,32 +97,35 @@ class pandaReachGymEnv(gym.Env):
         p.setPhysicsEngineParameter(numSolverIterations=150)
         p.setTimeStep(self._timeStep)
         self._envStepCounter = 0
-        p.loadURDF(os.path.join(pybullet_data.getDataPath(),
-                                "plane.urdf"), useFixedBase=True)
+
+
+        p.loadURDF(os.path.join(pybullet_data.getDataPath(), "plane.urdf"), useFixedBase= True)
         # Load robot
-        self._panda = pandaEnv(self._urdfRoot, timeStep=self._timeStep, basePosition=[0, 0, 0.625], 
-                                useInverseKinematics=self._useIK, action_space=self.action_dim, includeVelObs=self.includeVelObs)
+        self._kuka = kukakr6(self._urdfRoot, timeStep=self._timeStep, basePosition =[0,0,0.625], useInverseKinematics= self._useIK, action_space = self.action_dim, includeVelObs = self.includeVelObs)
         # Load table and object for simulation
-        tableId = p.loadURDF(os.path.join(
-            self._urdfRoot, "franka_description/table.urdf"), useFixedBase=True)
+        tableId = p.loadURDF(os.path.join(self._urdfRoot, "kuka_kr6_support/table.urdf"), useFixedBase=True)
+        # tableId = p.loadURDF(os.path.join(pybullet_data.getDataPath(), "table.urdf"), useFixedBase=True)
 
-        table_info = p.getVisualShapeData(tableId, -1)[0]
-        self._h_table = table_info[5][2] + table_info[3][2]
 
-        # limit panda workspace to table plane
-        self._panda.workspace_lim[2][0] = self._h_table
+        table_info = p.getVisualShapeData(tableId,-1)[0]
+        self._h_table =table_info[5][2] + table_info[3][2]
+
+        #limit panda workspace to table plane
+        self._kuka.workspace_lim[2][0] = self._h_table
         # Randomize start position of object and target.
 
         if (self.fixedPositionObj):
-            self._objID = p.loadURDF(os.path.join(
-                self._urdfRoot, "franka_description/cube_small.urdf"), basePosition=[0.7, 0.0, 0.64], useFixedBase=True)
+            self._objID = p.loadURDF( os.path.join(self._urdfRoot,"kuka_kr6_support/cube_small.urdf"), basePosition = [0.7,0.0,0.64], useFixedBase=True)
         else:
             self.target_pose = self._sample_pose()[0]
-            self._objID = p.loadURDF(os.path.join(
-                self._urdfRoot, "franka_description/cube_small.urdf"), basePosition=self.target_pose, useFixedBase=True)
+            self._objID = p.loadURDF( os.path.join(self._urdfRoot,"kuka_kr6_support/cube_small.urdf"), basePosition= self.target_pose, useFixedBase=True)
+        
+        self._obstacle = p.loadURDF(os.path.join(self._urdfRoot, "kuka_kr6_support/cube.urdf"), basePosition=[0.7,0.2,1.],useFixedBase=True)
+        self._obstacle = p.loadURDF(os.path.join(self._urdfRoot, "kuka_kr6_support/cube.urdf"), basePosition=[0.5,-0.3,0.9],useFixedBase=True)
+
 
         self._debugGUI()
-        p.setGravity(0, 0, -9.8)
+        p.setGravity(0,0,-9.8)
         # Let the world run for a bit
         for _ in range(10):
             p.stepSimulation()
@@ -135,32 +133,35 @@ class pandaReachGymEnv(gym.Env):
         self._observation = self.getExtendedObservation()
         return np.array(self._observation)
 
+
     def getExtendedObservation(self):
 
-        # get robot observations
-        self._observation = self._panda.getObservation()
+        #get robot observations
+        self._observation = self._kuka.getObservation()
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
 
         self._observation.extend(list(objPos))
         self._observation.extend(list(objOrn))
         return self._observation
 
+
     def step(self, action):
         if self._useIK:
-            # TO DO
+            #TO DO
             return 0
 
         else:
             action = [float(i*0.05) for i in action]
             return self.step2(action)
 
-    def step2(self, action):
+    def step2(self,action):
 
         for i in range(self._actionRepeat):
-            self._panda.applyAction(action)
+            self._kuka.applyAction(action)
             p.stepSimulation()
 
-            if self._termination():
+            if self._termination()[0]:
+                print('hello', self._envStepCounter)
                 break
 
             self._envStepCounter += 1
@@ -173,16 +174,20 @@ class pandaReachGymEnv(gym.Env):
         reward = self._compute_reward()
 
         done = self._termination()
+        info = {'is_success':False}
+        if self.terminated:
+            info['is_success'] = True
 
-        return np.array(self._observation), np.array([reward]), np.array(done), {}
+        return np.array(self._observation), np.array([reward]), np.array(done), info
+
+
 
     def render(self, mode="rgb_array", close=False):
-        # TODO Check the behavior of this function
+        ## TODO Check the behavior of this function
         if mode != "rgb_array":
-            return np.array([])
+          return np.array([])
 
-        base_pos, orn = self._p.getBasePositionAndOrientation(
-            self._panda.pandaId)
+        base_pos,orn = self._p.getBasePositionAndOrientation(self._kuka.kukaId)
         view_matrix = self._p.computeViewMatrixFromYawPitchRoll(
             cameraTargetPosition=base_pos,
             distance=self._cam_dist,
@@ -196,7 +201,7 @@ class pandaReachGymEnv(gym.Env):
         (_, _, px, _, _) = self._p.getCameraImage(
             width=RENDER_WIDTH, height=RENDER_HEIGHT, viewMatrix=view_matrix,
             projectionMatrix=proj_matrix, renderer=self._p.ER_BULLET_HARDWARE_OPENGL)
-        # renderer=self._p.ER_TINY_RENDERER)
+            #renderer=self._p.ER_TINY_RENDERER)
 
         rgb_array = np.array(px, dtype=np.uint8)
         rgb_array = np.reshape(rgb_array, (RENDER_HEIGHT, RENDER_WIDTH, 4))
@@ -204,14 +209,17 @@ class pandaReachGymEnv(gym.Env):
         rgb_array = rgb_array[:, :, :3]
         return rgb_array
 
+
     def _termination(self):
 
-        endEffPose = self._panda.getObservation()[0:3]
+        endEffPose = self._kuka.getObservation()[0:3]
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
         d = goal_distance(np.array(objPos), np.array(endEffPose))
 
         if d <= self._target_dist_min:
+            print('successed to reach goal, obj position is {} and endEffPosition is {}'.format(objPos, endEffPose))
             self.terminated = True
+
 
         if (self.terminated or self._envStepCounter > self._maxSteps):
             self._observation = self.getExtendedObservation()
@@ -219,29 +227,31 @@ class pandaReachGymEnv(gym.Env):
 
         return [False]
 
+
     def _compute_reward(self):
 
         reward = np.float(32.0)
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
-        endEffAct = self._panda.getObservation()[0:3]
+        endEffAct = self._kuka.getObservation()[0:3]
         d = goal_distance(np.array(endEffAct), np.array(objPos))
         reward = -d
         if d <= self._target_dist_min:
             reward = np.float32(1000.0) + (100 - d*80)
         return reward
 
+
     def _sample_pose(self):
-        ws_lim = self._panda.workspace_lim
-        px, tx = np.random.uniform(
-            low=ws_lim[0][0], high=ws_lim[0][1], size=(2))
-        py, ty = np.random.uniform(
-            low=ws_lim[1][0], high=ws_lim[1][1], size=(2))
-        pz, tz = self._h_table, self._h_table
-        obj_pose = [px, py, pz]
-        tg_pose = [tx, ty, tz]
+        ws_lim = self._kuka.workspace_lim
+        px,tx = np.random.uniform(low=ws_lim[0][0], high=ws_lim[0][1], size=(2))
+        py,ty = np.random.uniform(low=ws_lim[1][0], high=ws_lim[1][1], size=(2))
+        pz,tz = self._h_table, self._h_table
+        obj_pose = [px,py,pz]
+        tg_pose = [tx,ty,tz]
 
         return obj_pose, tg_pose
 
+
+
     def _debugGUI(self):
-        # TO DO
+        #TO DO
         return 0

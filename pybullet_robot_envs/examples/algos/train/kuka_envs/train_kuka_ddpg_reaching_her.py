@@ -73,8 +73,8 @@ def main(argv):
     numControlledJoints = 6
     fixed = False
     normalize_observations = False
-    gamma = 0.99
-    batch_size = 64
+    gamma = 0.9
+    batch_size = 16
     memory_limit = 1000000
     normalize_returns = True
     timesteps = 1000000

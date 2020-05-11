@@ -153,7 +153,7 @@ class kukaPushGymEnvHer(gym.GoalEnv):
         observation.extend(list(objPos))
         observation.extend(list(objOrn))
         # add target object position
-        observation.extend(list(self.target_pose))
+        # observation.extend(list(self.target_pose))
         # return self._observation
         # print('self observation:', list(observation))
         return OrderedDict([
@@ -267,7 +267,8 @@ class kukaPushGymEnvHer(gym.GoalEnv):
         # tg_pose = [tx, ty, tz]
 
         # return obj_pose, tg_pose
-        ws_lim = self._kuka.workspace_lim
+        # ws_lim = self._kuka.workspace_lim
+        ws_lim = [[0.35, 0.5], [-0.2, 0.2], [0, 1]]
         px1 = np.random.uniform(
             low=ws_lim[0][0]+0.005*np.random.rand(), high=ws_lim[0][1]-0.005*np.random.rand())
         py1 = np.random.uniform(

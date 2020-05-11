@@ -137,8 +137,8 @@ class kukaReachGymEnvHer(gym.GoalEnv):
         observation = self._kuka.getObservation()
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
 
-        observation.extend(list(objPos))
-        observation.extend(list(objOrn))
+        # observation.extend(list(objPos))
+        # observation.extend(list(objOrn))
 
         endEffPose = list(observation[0:3])
 
@@ -234,9 +234,17 @@ class kukaReachGymEnvHer(gym.GoalEnv):
 
         
         d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
-        reward = -d
+
+        # dense reward
+        # reward = -d
+        # if d <= self._target_dist_min:
+        #     reward = np.float32(1000.0) + (100 - d*80)
+        # sparse reward
         if d <= self._target_dist_min:
-            reward = np.float32(1000.0) + (100 - d*80)
+            reward = 0
+        else:
+            reward = -1
+        
         return reward
 
 

@@ -20,9 +20,11 @@ def main():
     motorsIds = []
 
     dv = 1
-    for i in range(6):
+    numJoint = env._p.getNumJoints(env._kuka.kukaId)
+    for i in range(numJoint):
         info = env._p.getJointInfo(env._kuka.kukaId,i)
         jointName = info[1]
+        print(info)
         motorsIds.append(env._p.addUserDebugParameter(jointName.decode("utf-8"), -dv, dv, 0.0))
 
     done = False
@@ -31,14 +33,16 @@ def main():
 
     for t in range(int(1e7)):
         #env.render()
-        # action = []
-        # for motorId in range(6):
-        #     action.append(env._p.readUserDebugParameter(motorId))
+        action = []
+        for motorId in range(6):
+            action.append(env._p.readUserDebugParameter(motorId))
 
-        # action = int(action[0]) if discreteAction else action
-
+        action = int(action[0]) if discreteAction else action
+        # print(action)
         #print(env.step(action))
-        action = env.action_space.sample()
+        # action = env.action_space.sample()
+        # print(action)
+        # action[-3] = action[-2]
 
         state, reward, done, _ = env.step(action)
         if t%100==0:

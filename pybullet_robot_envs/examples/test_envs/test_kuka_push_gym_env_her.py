@@ -31,11 +31,13 @@ def main():
 
     for t in range(int(1e7)):
         #env.render()
-        action = []
-        for motorId in range(6):
-            action.append(env._p.readUserDebugParameter(motorId))
+        # action = []
+        # for motorId in range(6):
+        #     action.append(env._p.readUserDebugParameter(motorId))
 
-        action = int(action[0]) if discreteAction else action
+        # action = int(action[0]) if discreteAction else action
+        # action = [0,-0.3,0.3,0,0.3,0]
+        action = [0]*6
 
         #print(env.step(action))
 

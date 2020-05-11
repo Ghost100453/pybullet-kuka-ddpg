@@ -10,12 +10,13 @@ parentdir =path.abspath(path.join(__file__ ,"../../../../../.."))
 os.sys.path.insert(0, parentdir)
 print(parentdir)
 from pybullet_robot_envs.envs.kuka_envs.kuka_reach_gym_env import kukaReachGymEnv
+from pybullet_robot_envs.envs.kuka_envs.kuka_reach_gym_env_her import kukaReachGymEnvHer
 
 
 from stable_baselines.ddpg.policies import MlpPolicy
 from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines.ddpg.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise, AdaptiveParamNoiseSpec
-from stable_baselines import DDPG
+from stable_baselines import DDPG, HER
 from termcolor import colored
 
 import datetime
@@ -71,9 +72,10 @@ def main(argv):
     print(colored("------","red"))
     print(colored("Launch the script with -h for further info","red"))
 
-    model = DDPG.load("../pybullet_logs/kukareach_ddpg/"+ policy_name)
+    # model = DDPG.load("../pybullet_logs/kukareach_ddpg/"+ policy_name)
+    kukaenv = kukaReachGymEnvHer(urdfRoot=robot_data.getDataPath(), renders=True, useIK=0, numControlledJoints = numControlledJoints, fixedPositionObj = fixed, includeVelObs = True)
+    model = HER.load("../pybullet_logs/kukareach_ddpg_her/"+ policy_name,env=kukaenv)
 
-    kukaenv = kukaReachGymEnv(urdfRoot=robot_data.getDataPath(), renders=True, useIK=0, numControlledJoints = numControlledJoints, fixedPositionObj = fixed, includeVelObs = True)
     for i in range(10):
         obs = kukaenv.reset()
         dones = False
