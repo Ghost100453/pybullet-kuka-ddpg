@@ -1,0 +1,35 @@
+digraph G {
+node [shape=box];
+"base_link" [label="base_link"];
+"base" [label="base"];
+"link_1" [label="link_1"];
+"link_2" [label="link_2"];
+"link_3" [label="link_3"];
+"link_4" [label="link_4"];
+"link_5" [label="link_5"];
+"link_6" [label="link_6"];
+"tool0" [label="tool0"];
+"leftfinger" [label="leftfinger"];
+"rightfinger" [label="rightfinger"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"base_link" -> "base_link-base" [label="xyz: 0 0 0 \nrpy: 0 -0 0"]
+"base_link-base" -> "base"
+"base_link" -> "joint_1" [label="xyz: 0 0 0.4 \nrpy: 0 -0 0"]
+"joint_1" -> "link_1"
+"link_1" -> "joint_2" [label="xyz: 0.025 0 0 \nrpy: 0 -0 0"]
+"joint_2" -> "link_2"
+"link_2" -> "joint_3" [label="xyz: 0.315 0 0 \nrpy: 0 -0 0"]
+"joint_3" -> "link_3"
+"link_3" -> "joint_4" [label="xyz: 0 0 0.035 \nrpy: 0 -0 0"]
+"joint_4" -> "link_4"
+"link_4" -> "joint_5" [label="xyz: 0.365 0 0 \nrpy: 0 -0 0"]
+"joint_5" -> "link_5"
+"link_5" -> "joint_6" [label="xyz: 0.08 0 0 \nrpy: 0 -0 0"]
+"joint_6" -> "link_6"
+"link_6" -> "joint_6-tool0" [label="xyz: 0 0 0 \nrpy: 0 1.5708 -0"]
+"joint_6-tool0" -> "tool0"
+"tool0" -> "finger_joint1" [label="xyz: 0 0 0.0584 \nrpy: 0 -0 0"]
+"finger_joint1" -> "leftfinger"
+"tool0" -> "finger_joint2" [label="xyz: 0 0 0.0584 \nrpy: 0 -0 0"]
+"finger_joint2" -> "rightfinger"
+}

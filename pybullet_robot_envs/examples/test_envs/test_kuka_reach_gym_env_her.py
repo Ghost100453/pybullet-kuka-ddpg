@@ -43,7 +43,7 @@ def main():
         if t%100==0:
             print("reward ", reward)
             print("done ", done)
-            print('state', state)
+            print('state', state['observation'])
             env._p.addUserDebugText(' '.join(str(round(e,2)) for e in state['observation'][:6]),[0,-0.5,1.2],[1,0,0],replaceItemUniqueId=idx)
 
 if __name__ == "__main__":

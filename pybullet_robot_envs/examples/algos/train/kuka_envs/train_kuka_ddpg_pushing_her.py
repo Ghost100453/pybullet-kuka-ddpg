@@ -32,6 +32,8 @@ parentdir = path.abspath(path.join(__file__, "../../../../../.."))
 os.sys.path.insert(0, parentdir)
 print(parentdir)
 
+from mpi4py import MPI
+
 
 class CustomPolicy(FeedForwardPolicy):
     def __init__(self, *args, **kwargs):
@@ -45,7 +47,6 @@ class CustomPolicy(FeedForwardPolicy):
 best_mean_reward, n_steps = -np.inf, 0
 log_dir = "../pybullet_logs/kuka_push_ddpg_her/"
 log_dir_policy = '../policies/pushing_DDPG_HER_PHASE_1'
-
 
 def callback(_locals, _globals):
     global n_steps, best_mean_reward, log_dir
@@ -68,9 +69,7 @@ def callback(_locals, _globals):
     n_steps += 1
     return True
 
-
 def main(argv):
-
     numControlledJoints = 6
     fixed = False
     normalize_observations = False
@@ -78,7 +77,7 @@ def main(argv):
     batch_size = 64
     memory_limit = 1000000
     normalize_returns = True
-    timesteps = 5000000
+    timesteps = 1000000
     policy_name = "pushing_policy"
     discreteAction = 0
     rend = False
