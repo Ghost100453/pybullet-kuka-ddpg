@@ -44,10 +44,12 @@ class kukakr6:
         urdfFlags = p.URDF_USE_SELF_COLLISION
         self.kukaId = p.loadURDF(
             self.urdfRootPath, basePosition=self.basePosition, useFixedBase=self.useFixedBase, flags = urdfFlags)
-        # jointStates = [0,-0.5,0.5,0,1.6,0]
+        jointStates = [0,-0.5,1.5,0,0,0]
+        # jointStates = [0,0,0,0,0,0]
+
         for i in range(self.numJoints):
-            p.resetJointState(self.kukaId, i, 0)
-            p.setJointMotorControl2(self.kukaId, i, p.POSITION_CONTROL, targetPosition=0, targetVelocity=0.0,
+            p.resetJointState(self.kukaId, i, jointStates[i])
+            p.setJointMotorControl2(self.kukaId, i, p.POSITION_CONTROL, targetPosition=jointStates[i], targetVelocity=0.0,
                                     positionGain=0.25, velocityGain=0.75, force=50)
         if self.useInverseKinematics:
             self.endEffPos = [0.4, 0, 0.85]  # x,y,z

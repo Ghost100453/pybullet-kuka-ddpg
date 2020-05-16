@@ -102,8 +102,8 @@ class kukaReachGymEnvHer(kukaGymEnv):
         d = goal_distance(np.array(objPos), np.array(endEffPose))
 
         if d <= self._target_dist_min:
-            print('successed to reach goal, obj position is {} and endEffPosition is {}'.format(
-                objPos, endEffPose))
+            # print('successed to reach goal, obj position is {} and endEffPosition is {}'.format(
+            #     objPos, endEffPose))
             self.terminated = True
         if (self.terminated or self._envStepCounter > self._maxSteps):
             self._observation = self.getExtendedObservation()
@@ -116,14 +116,7 @@ class kukaReachGymEnvHer(kukaGymEnv):
 
     def compute_reward(self, achieved_goal, desired_goal, info):
         d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
-        if d <= self._target_dist_min:
-            if self.reward_type == 1:
-                reward = 0
-            else:
-                reward = np.float32(1000.0) + (100 - d*80)
+        if self.reward_type == 1:
+            return -(d > self._target_dist_min).astype(np.float32)
         else:
-            if self.reward_type == 1:
-                reward = -1
-            else:
-                reward = -d
-        return reward
+            return -d

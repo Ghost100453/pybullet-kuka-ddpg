@@ -103,8 +103,8 @@ class kukaReachGymEnv(kukaGymEnv):
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
         d = goal_distance(np.array(objPos), np.array(endEffPose))
         if d <= self._target_dist_min:
-            print('successed to reach goal, obj position is {} and endEffPosition is {}'.format(
-                objPos, endEffPose))
+            # print('successed to reach goal, obj position is {} and endEffPosition is {}'.format(
+            #     objPos, endEffPose))
             self.terminated = True
 
         if (self.terminated or self._envStepCounter > self._maxSteps):
@@ -119,11 +119,6 @@ class kukaReachGymEnv(kukaGymEnv):
         endEffPose = self._kuka.getObservation()[0:3]
         d = goal_distance(np.array(objPos), np.array(endEffPose))
         if self.reward_type == 1:
-            reward = -1
-            if d <= self._target_dist_min:
-                reward = 0
+            return -(d > self._target_dist_min).astype(np.float32)
         else:
-            reward = -d
-            if d <= self._target_dist_min:
-                reward = np.float32(1000.0) + (100 - d*80)
-        return reward
+            return -d

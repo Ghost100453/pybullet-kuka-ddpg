@@ -45,7 +45,7 @@ class CustomPolicy(FeedForwardPolicy):
 
 best_mean_reward, n_steps = -np.inf, 0
 log_dir="../pybullet_logs/kuka_reach_ddpg_her/"
-log_dir_policy = '../policies/reaching_DDPG_HER_PHASE_1'
+log_dir_policy = '../policies/reaching_DDPG_HER_PHASE'
 
 
 def callback(_locals, _globals):
@@ -91,8 +91,8 @@ def main(argv):
     model_class = DDPG
     goal_selection_strategy = 'future'
     model = HER(CustomPolicy, kukaenv, model_class, n_sampled_goal=4, goal_selection_strategy=goal_selection_strategy,
-                verbose=1,tensorboard_log="../pybullet_logs/kuka_reach_ddpg/reaching_DDPG_HER_PHASE_1", buffer_size=1000000,batch_size=256,
-                random_exploration=0.3, action_noise=action_noise)
+                verbose=1,tensorboard_log="../pybullet_logs/kuka_reach_ddpg/reaching_DDPG_HER_PHASE", 
+                buffer_size=1000000,batch_size=64,random_exploration=0.3, action_noise=action_noise)
 
     print(colored("-----Timesteps:","red"))
     print(colored(timesteps,"red"))

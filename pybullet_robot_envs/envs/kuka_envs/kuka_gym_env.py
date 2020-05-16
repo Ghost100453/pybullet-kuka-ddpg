@@ -150,8 +150,8 @@ class kukaGymEnv(gym.Env):
                 break
             self._envStepCounter += 1
             # print(datetime.now(), 'envStepCounter:', self._envStepCounter, 'terminated:', self._termination())
-        if self._renders:
-            time.sleep(self._timeStep)
+            if self._renders:
+                time.sleep(self._timeStep)
         self._observation = self.getExtendedObservation()
         reward = self._compute_reward()
         done = self._termination()

@@ -110,36 +110,20 @@ class kukaPushGymEnvHer(kukaGymEnv):
             return True
         return False
     
-    def compute_reward(self, achieved_goal, desired_goal, info):
-        d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
-        reward = -1
-        if d <= self._target_dist_min:
-            if self.reward_type == 1:
-                reward = 0
-            else:
-                reward = np.float32(1000.0) + (100 - d*80)
-        else:
-            if self.reward_type == 1:
-                reward = -1
-            else:
-                reward = -d
-        return reward
-    
     def _compute_reward(self):
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
-        endEffAct = self._kuka.getObservation()[0:3]
-        d2 = goal_distance(np.array(objPos), np.array(self.target_pose))
+        endEffPos = self._kuka.getObservation()[0:3]
+        d = goal_distance(np.array(objPos), np.array(self.target_pose))
         # d = d1 + d2
         # reward = -d
-        reward = -1
-        if d2 <= self._target_dist_min:
-            if self.reward_type == 1:
-                reward = 0
-            else:
-                reward = np.float32(1000.0) + (100 - d2*80)
+        if self.reward_type == 1:
+            return -(d > self._target_dist_min).astype(np.float32)
         else:
-            if self.reward_type == 1:
-                reward = -1
-            else:
-                reward = -d2
-        return reward
+            return -d
+
+    def compute_reward(self, achieved_goal, desired_goal, info):
+        d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
+        if self.reward_type == 1:
+            return -(d > self._target_dist_min).astype(np.float32)
+        else:
+            return -d
