@@ -69,7 +69,7 @@ class kukaPickGymEnvHer(kukaGymEnv):
         self._reset()
         # Randomize start position of object and target.
         self.obj_pose, _ = self._sample_pose()
-        self.target_pose = np.array([0.6, 0.0, 0.64]) + np.array([0,0,0.2])
+        self.target_pose = np.array([0.5, 0.0, 0.84])
         self.fixedPositionObj = True
         if (self.fixedPositionObj):
             self._objID = p.loadURDF(os.path.join(
@@ -117,31 +117,47 @@ class kukaPickGymEnvHer(kukaGymEnv):
             # TO DO
             return 0
         else:
+            action[-1] = action[-2]
             endEffPos = self._kuka.getObservation()[0:3]
             objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
-            if goal_distance(np.array(objPos), np.array(endEffPos)) < 0.1:
-                action[-2] = action[-1] = -0.05
+            if goal_distance(np.array(objPos), np.array(endEffPos)) > 0.1:
+                action[-2] = action[-1] = 0.02
             else:
-                action[-2] = action[-1] = 0.1
+                action[-2] = action[-1] = -0.02
+            # if endEffPos[2] - self._h_table > 0.1:
+            #     action[-2] = action[-1] = 0.02
+            # else:
+            #     action[-2] = action[-1] = 0.02
             action = [float(i*0.05) for i in action]
             return self.step2(action)
     
-    def _compute_reward(self):
-        objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
-        endEffPos = self._kuka.getObservation()[0:3]
-        d1 = goal_distance(np.array(objPos), np.array(self.target_pose))
-        d2 = goal_distance(np.array(objPos), np.array(endEffPos))
-        d = d1 + d2
-        # d = d1 + d2
-        # reward = -d
-        if self.reward_type == 1:
-            return -(d > self._target_dist_min).astype(np.float32)
-        else:
-            return -d
-
+    def step2(self, action):
+        # print('actionRepeat:', self._actionRepeat)
+        for i in range(self._actionRepeat):
+            self._kuka.applyAction(action)
+            p.stepSimulation()
+            if self._termination():
+                break
+            self._envStepCounter += 1
+            # print(datetime.now(), 'envStepCounter:', self._envStepCounter, 'terminated:', self._termination())
+            if self._renders:
+                time.sleep(self._timeStep)
+        self._observation = self.getExtendedObservation()
+        reward = self.compute_reward(self._observation['achieved_goal'], self._observation['desired_goal'], None)[0]
+        done = self._termination()
+        info = {'is_success': False}
+        if self.terminated:
+            info['is_success'] = True
+        return self._observation, reward, done, info
+    
     def compute_reward(self, achieved_goal, desired_goal, info):
-        d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
+        # d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
+        # if self.reward_type == 1:
+        #     return -(d > self._target_dist_min).astype(np.float32)
+        # else:
+        #     return -d
+        achieved_goal = np.array(achieved_goal).reshape(-1,3)
         if self.reward_type == 1:
-            return -(d > self._target_dist_min).astype(np.float32)
+            return -(achieved_goal< self._target_dist_min+self._h_table)[:,2].astype(np.float32)
         else:
-            return -d
+            return (self._h_table + self._target_dist_min - achieved_goal)[:,2]

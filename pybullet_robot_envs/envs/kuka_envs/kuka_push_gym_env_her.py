@@ -69,6 +69,7 @@ class kukaPushGymEnvHer(kukaGymEnv):
         self._reset()
         # Randomize start position of object and target.
         self.obj_pose, self.target_pose = self._sample_pose()
+        self.init_obj_pos = self.obj_pose
         if (self.fixedPositionObj):
             self._objID = p.loadURDF(os.path.join(
                 self._urdfRoot, "kuka_kr6_support/cube.urdf"), basePosition=[0.7, 0.0, 0.64], useFixedBase=False)
@@ -117,8 +118,12 @@ class kukaPushGymEnvHer(kukaGymEnv):
         # d = d1 + d2
         # reward = -d
         if self.reward_type == 1:
+            if goal_distance(np.array(self.init_obj_pos), np.array(objPos)) < 0.1:
+                return -2
             return -(d > self._target_dist_min).astype(np.float32)
         else:
+            if self.init_obj_pos == objPos:
+                return -d-goal_distance(np.array(objPos), np.array(endEffPos))
             return -d
 
     def compute_reward(self, achieved_goal, desired_goal, info):
