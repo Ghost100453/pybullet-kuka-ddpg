@@ -128,7 +128,15 @@ class kukaPushGymEnvHer(kukaGymEnv):
 
     def compute_reward(self, achieved_goal, desired_goal, info):
         d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
+        # print(self.init_obj_pos)
+        # print(achieved_goal.shape)
+        init_obj_pos_array = np.array([self.init_obj_pos]*achieved_goal.shape[0])
+        # print(init_obj_pos_array)
         if self.reward_type == 1:
-            return -(d > self._target_dist_min).astype(np.float32)
+            index = goal_distance(np.array(init_obj_pos_array), np.array(achieved_goal)) < 0.1
+            result = -(d > self._target_dist_min).astype(np.float32)
+            result[index] = -2
+            # print(result)
+            return result
         else:
             return -d

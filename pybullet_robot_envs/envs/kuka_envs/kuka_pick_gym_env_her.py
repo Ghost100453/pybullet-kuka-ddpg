@@ -118,12 +118,12 @@ class kukaPickGymEnvHer(kukaGymEnv):
             return 0
         else:
             action[-1] = action[-2]
-            endEffPos = self._kuka.getObservation()[0:3]
-            objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
-            if goal_distance(np.array(objPos), np.array(endEffPos)) > 0.1:
-                action[-2] = action[-1] = 0.02
-            else:
-                action[-2] = action[-1] = -0.02
+            # endEffPos = self._kuka.getObservation()[0:3]
+            # objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
+            # if goal_distance(np.array(objPos), np.array(endEffPos)) > 0.1:
+            #     action[-2] = action[-1] = 0.02
+            # else:
+            #     action[-2] = action[-1] = -0.02
             # if endEffPos[2] - self._h_table > 0.1:
             #     action[-2] = action[-1] = 0.02
             # else:
