@@ -49,6 +49,7 @@ class kukaReachGymEnvHer(kukaGymEnv):
         super().__init__(urdfRoot, useIK, isDiscrete, actionRepeat, renders,
                          maxSteps, dist_delta, numControlledJoints, fixedPositionObj)
         self.reward_type = reward_type
+        self.ws_lim = [[0.1, 0.65], [-0.5, 0.5], [0, 1]]
         # self._observation = self.reset()
         observation_dim = len(self._observation['observation'])
         self.observation_space = spaces.Dict({

@@ -66,6 +66,7 @@ class kukaGymEnv(gym.Env):
         self._p = p
         self.fixedPositionObj = fixedPositionObj
         self.includeVelObs = includeVelObs
+        self.ws_lim = [[0.3, 0.5], [-0.2, 0.2], [0, 1]]
 
         if self._renders:
             cid = p.connect(p.SHARED_MEMORY)
@@ -226,11 +227,10 @@ class kukaGymEnv(gym.Env):
         return reward
 
     def _sample_pose(self):
-        ws_lim = [[0.3, 0.5], [-0.2, 0.2], [0, 1]]
         px1 = np.random.uniform(
-            low=ws_lim[0][0]+0.005*np.random.rand(), high=ws_lim[0][1]-0.005*np.random.rand())
+            low=self.ws_lim[0][0]+0.005*np.random.rand(), high=self.ws_lim[0][1]-0.005*np.random.rand())
         py1 = np.random.uniform(
-            low=ws_lim[1][0]+0.005*np.random.rand(), high=ws_lim[1][1]-0.005*np.random.rand())
+            low=self.ws_lim[1][0]+0.005*np.random.rand(), high=self.ws_lim[1][1]-0.005*np.random.rand())
 
         if px1 < 0.45:
             px2 = px1 + np.random.uniform(0.1, 0.2)
