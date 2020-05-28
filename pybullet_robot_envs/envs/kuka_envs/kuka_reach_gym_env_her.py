@@ -49,7 +49,7 @@ class kukaReachGymEnvHer(kukaGymEnv):
         super().__init__(urdfRoot, useIK, isDiscrete, actionRepeat, renders,
                          maxSteps, dist_delta, numControlledJoints, fixedPositionObj)
         self.reward_type = reward_type
-        self.ws_lim = [[0.1, 0.65], [-0.5, 0.5], [0, 1]]
+        self.reset()
         # self._observation = self.reset()
         observation_dim = len(self._observation['observation'])
         self.observation_space = spaces.Dict({
@@ -113,11 +113,59 @@ class kukaReachGymEnvHer(kukaGymEnv):
         return False
     
     def _compute_reward(self):
-        return self.compute_reward(self._observation['achieved_goal'], self._observation['desired_goal'], None)
+        d = goal_distance(np.array(self._observation['achieved_goal']), np.array(self._observation['desired_goal']))
+        if self.reward_type == 1:
+            return -(d > self._target_dist_min).astype(np.float32)
+        elif self.reward_type == 2:
+            return -d
+        else:
+            reward = -d
+            if d < self._target_dist_min:
+                reward = np.float32(1000.0) + (100 - d*80)   
+            return reward
 
     def compute_reward(self, achieved_goal, desired_goal, info):
         d = goal_distance(np.array(achieved_goal), np.array(desired_goal))
         if self.reward_type == 1:
             return -(d > self._target_dist_min).astype(np.float32)
-        else:
+        elif self.reward_type == 2:
             return -d
+        else:
+            # reward = -d
+            # if d < self._target_dist_min:
+            #     reward = np.float32(1000.0) + (100 - d*80)   
+            # result = -d
+            index = d < self._target_dist_min
+            result = -(d).astype(np.float32)
+            result[index] += 100
+            # print(result)
+            return result
+    
+    def _sample_pose(self):
+        self.ws_lim = [[0.1, 0.65], [-0.5, 0.5], [0, 0.2]]
+        px1 = np.random.uniform(
+            low=self.ws_lim[0][0]+0.005*np.random.rand(), high=self.ws_lim[0][1]-0.005*np.random.rand())
+        py1 = np.random.uniform(
+            low=self.ws_lim[1][0]+0.005*np.random.rand(), high=self.ws_lim[1][1]-0.005*np.random.rand())
+        
+        pz1 = np.random.uniform(low=self.ws_lim[2][0],high=self.ws_lim[2][1])
+        pz2 = np.random.uniform(low=self.ws_lim[2][0],high=self.ws_lim[2][1])
+
+
+        if px1 < 0.45:
+            px2 = px1 + np.random.uniform(0.1, 0.2)
+        else:
+            px2 = px1 - np.random.uniform(0.1, 0.2)
+        if py1 < 0:
+            py2 = py1 + np.random.uniform(0.2, 0.3)
+        else:
+            py2 = py1 - np.random.uniform(0.2, 0.3)
+
+        pz = self._h_table
+        pz1 += self._h_table
+        pz2 += self._h_table
+        pose1 = [px1, py1, pz1]
+        pose2 = [px2, py2, pz2]
+        # pose1 = [px1, py1, pz]
+        # pose2 = [px2, py2, pz]
+        return pose1, pose2

@@ -45,10 +45,13 @@ class kukaReachGymEnvOb(kukaGymEnv):
                  numControlledJoints=6,
                  fixedPositionObj=True,
                  includeVelObs=True,
-                 reward_type=1):
+                 reward_type=1,
+                 obstacles_num = 2):
         super().__init__(urdfRoot, useIK, isDiscrete, actionRepeat, renders,
                          maxSteps, dist_delta, numControlledJoints, fixedPositionObj)
         self.reward_type = reward_type
+        self.obstacles_num = obstacles_num
+        self.reset()
         # self._observation = self.reset()
         observation_dim = len(self._observation['observation'])
         self.observation_space = spaces.Dict({
@@ -76,8 +79,19 @@ class kukaReachGymEnvOb(kukaGymEnv):
             self.target_pose = self._sample_pose()[0]
             self._objID = p.loadURDF(os.path.join(
                 self._urdfRoot, "kuka_kr6_support/cube_small.urdf"), basePosition=self.target_pose, useFixedBase=True)
-        self._obstacle = p.loadURDF(os.path.join(self._urdfRoot, "kuka_kr6_support/cube.urdf"), basePosition=[0.6,0.2,1.],useFixedBase=True)
-        self._obstacle = p.loadURDF(os.path.join(self._urdfRoot, "kuka_kr6_support/cube.urdf"), basePosition=[0.5,-0.3,0.],useFixedBase=True)
+        self.obstacles = []
+        obstacle_position = [
+            [0.5,0.3,1.],
+            [0.45,-0.,0.8],
+            [0.3,-0.2,0.9],
+            [0.4,-0.3,0.8],
+            [0.6,0.1,1.0]
+        ]
+        # print(self.obstacles_num)
+        for k in range(self.obstacles_num):
+            _obstacle = p.loadURDF(os.path.join(self._urdfRoot, "kuka_kr6_support/cube.urdf"), basePosition=obstacle_position[k],useFixedBase=True)
+            self.obstacles.extend(obstacle_position[k])
+        # print(self.obstacles)
 
         self._debugGUI()
         for _ in range(10):
@@ -91,6 +105,7 @@ class kukaReachGymEnvOb(kukaGymEnv):
         objPos, objOrn = p.getBasePositionAndOrientation(self._objID)
 
         endEffPose = list(observation[0:3])
+        # observation.extend(self.obstacles)
 
         return OrderedDict([
             ('observation', np.asarray(list(observation).copy())),

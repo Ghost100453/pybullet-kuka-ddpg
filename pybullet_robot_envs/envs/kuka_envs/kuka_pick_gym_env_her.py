@@ -50,6 +50,7 @@ class kukaPickGymEnvHer(kukaGymEnv):
         super().__init__(urdfRoot, useIK, isDiscrete, actionRepeat, renders, maxSteps,
                          dist_delta, numControlledJoints, fixedPositionObj, includeVelObs)
         self.reward_type = reward_type
+        self.reset()
         observation_dim = len(self._observation['observation'])
         self.observation_space = spaces.Dict({
             'observation': spaces.Box(-largeValObservation, largeValObservation, shape=(observation_dim,), dtype=np.float32),

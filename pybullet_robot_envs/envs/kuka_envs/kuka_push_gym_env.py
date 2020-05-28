@@ -49,6 +49,7 @@ class kukaPushGymEnv(kukaGymEnv):
         super().__init__(urdfRoot, useIK, isDiscrete, actionRepeat, renders, maxSteps,
                          dist_delta, numControlledJoints, fixedPositionObj, includeVelObs)
         self.reward_type = reward_type
+        self.reset()
         observationDim = len(self._observation)
         observation_high = np.array([largeValObservation] * observationDim)
         self.observation_space = spaces.Box(-observation_high,

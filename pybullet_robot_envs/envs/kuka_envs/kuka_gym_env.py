@@ -78,7 +78,7 @@ class kukaGymEnv(gym.Env):
 
         # self.seed()
         # initialize simulation environment
-        self.reset()
+        # self.reset()
 
     def reset(self):
         self._reset()
